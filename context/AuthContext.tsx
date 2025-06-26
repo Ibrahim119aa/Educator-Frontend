@@ -24,6 +24,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const checkAuth = async () => {
     try {
       const response = await getRole() as any;
+ 
+
       setRole(response.role);
       setUser(response);
       return;

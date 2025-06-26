@@ -5,26 +5,26 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 const Layout = ({ children }: Readonly<{ children: React.ReactNode; }>) => {
-    const {role, availableRoles} = useAuth();
+    const { role, availableRoles } = useAuth();
     const router = useRouter();
     useEffect(() => {
-        if(!availableRoles.includes(role)){
+        if (!availableRoles.includes(role)) {
             router.replace('/login');
         }
     }, [role, availableRoles, router]);
 
-    if(role === "admin"){
+    if (role === "admin") {
         return (
             <div className="flex">
-            <Sidebar />
-            <div className="flex-1">{children}</div>
+                <Sidebar />
+                <div className="flex-1">{children}</div>
             </div>
         );
     }
-    
+
     return (
-        <>    
-        {children}
+        <>
+            {children}
         </>
     )
 }

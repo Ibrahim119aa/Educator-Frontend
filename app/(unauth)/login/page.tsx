@@ -51,7 +51,7 @@ const Login = () => {
             router.push("/dashboard");
 
         }
-        else if (values.role === "parent") {
+        else if (values.role === "parent" || values.role === "student") {
             const res: any = await loginParent(values);
             console.log("This is login response");
             console.log(res);
