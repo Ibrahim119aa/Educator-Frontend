@@ -9,7 +9,7 @@ const Dashboard = ()=>{
     return (
         <>
         {role === "teacher" && <Teacher />}
-        {role === "student" && <Student />}
+        {role === "parent" && <Student />}
         {role === "admin" && <Admin />}
         </>
     );
