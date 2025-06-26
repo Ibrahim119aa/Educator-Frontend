@@ -16,7 +16,7 @@ export const fetchApi = async <T>(endpoint: string, method: string, data?: any):
 
 
         if (data) {
-           
+
             if (data instanceof FormData) {
                 delete headers['Content-Type'];
                 // headers['Content-Type']='multipart/form-data';
@@ -39,15 +39,16 @@ export const fetchApi = async <T>(endpoint: string, method: string, data?: any):
 
         console.log("THis is response");
         console.log(response);
-
+        console.log(data);
 
 
         let responseData: T | { error?: string };
         try {
-
+            console.log(`This is parsing`);
+            
 
             responseData = await response.json();
-        } catch (e:any) {
+        } catch (e: any) {
             responseData = { error: ` Failed to parse response ${e}` };
         }
 

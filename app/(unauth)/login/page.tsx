@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { loginParent } from "@/lib/API/Parent";
 import { loginTeacher } from "@/lib/API/Teacher";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -50,7 +51,21 @@ const Login = () => {
             router.push("/dashboard");
 
         }
+        else if (values.role === "parent") {
+            const res: any = await loginParent(values);
+            console.log("This is login response");
+            console.log(res);
+
+            if (res.error) {
+                setError({ backendError: res.error });
+                // console.error("Error", res.error);
+                return;
+            }
+            router.push("/dashboard");
+
+        }
     }
+
 
     return (
         <div className="p-5 pt-16 md:pt-32 flex-1 h-full flex items-center justify-center">
