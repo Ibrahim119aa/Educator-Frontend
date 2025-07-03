@@ -32,12 +32,17 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+
 import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+
+
+const TeachingSubjects = React.lazy(() => import("@/components/Teacher/TeacherSubject"));
+
 import {
   Select,
   SelectContent,
@@ -48,13 +53,12 @@ import {
 import {
   addNewTeachingLocation,
   addTeacherResidentialAddress,
-  addTeacherSubject,
+
   changeTeacherProfilePic,
   checkForAccountVerification,
-  deleteTeacherSubject,
+
   deleteTeachingLocation,
-  getClassList,
-  getSubjectList,
+
   getTeachingLocationList,
   getTeachingLocationWardsList,
   initiatePaymentForTeacherVerification,
@@ -71,7 +75,7 @@ import {
   Check,
   ChevronsUpDown,
   EllipsisVertical,
-  Loader,
+ 
   Pencil,
   Plus,
   Trash,
@@ -80,7 +84,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
-import {
+import React, {
   createContext,
   memo,
   useCallback,
@@ -119,9 +123,9 @@ export const DataValidationContext = createContext<{
   setValidateProfile: React.Dispatch<React.SetStateAction<boolean>>;
 }>({
   validate: false,
-  setValidate: () => {},
+  setValidate: () => { },
   validateProfile: false,
-  setValidateProfile: () => {},
+  setValidateProfile: () => { },
 });
 
 const formatDate = (dateString: string) => {
@@ -146,7 +150,7 @@ export const TeacherUpdateForm = ({ teacherData }: any) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<{ [key: string]: string }>({});
 
-  const { validate:_validate, setValidate } = useContext(DataValidationContext);
+  const { validate: _validate, setValidate } = useContext(DataValidationContext);
 
   const formSchema = z.object({
     teacher_id: z.any(),
@@ -211,7 +215,7 @@ export const TeacherUpdateForm = ({ teacherData }: any) => {
           // description: "Sunday, December 03, 2023 at 9:00 AM",
           action: {
             label: "Close",
-            onClick: () => {},
+            onClick: () => { },
           },
         });
       }
@@ -424,14 +428,14 @@ export const TeacherUpdateForm = ({ teacherData }: any) => {
                         value={
                           field.value
                             ? new Date(
-                                field.value.getTime() -
-                                  field.value.getTimezoneOffset() * 60000
-                              )
-                                .toISOString()
-                                .substring(0, 10)
+                              field.value.getTime() -
+                              field.value.getTimezoneOffset() * 60000
+                            )
+                              .toISOString()
+                              .substring(0, 10)
                             : ""
                         }
-                        onChange={(e:any) => {
+                        onChange={(e: any) => {
                           field.onChange(
                             e.target.value ? new Date(e.target.value) : ""
                           );
@@ -473,7 +477,7 @@ export const TeacherUpdateForm = ({ teacherData }: any) => {
                         type="text"
                         placeholder="Your Teaching Experience"
                         {...field}
-                        onChange={(e:any) => {
+                        onChange={(e: any) => {
                           const value = e.target.value;
                           // Only keep numeric values and restrict to a maximum of 2 characters
                           const numericValue = value
@@ -576,7 +580,7 @@ export const ResidentialAddressForm = memo(
           toast(res?.message, {
             action: {
               label: "Close",
-              onClick: () => {},
+              onClick: () => { },
             },
           });
         }
@@ -715,7 +719,7 @@ export const ResidentialAddressForm = memo(
                         <Input
                           placeholder="Pin Code"
                           {...field}
-                          onChange={(e:any) => {
+                          onChange={(e: any) => {
                             const cleaned = e.target.value
                               .replace(/\D/g, "")
                               .slice(0, 6);
@@ -862,7 +866,7 @@ export const PermanentAddressForm = memo(
           toast(res?.message, {
             action: {
               label: "Close",
-              onClick: () => {},
+              onClick: () => { },
             },
           });
         }
@@ -981,7 +985,7 @@ export const PermanentAddressForm = memo(
                         <Input
                           placeholder="Pin Code"
                           {...field}
-                          onChange={(e:any) => {
+                          onChange={(e: any) => {
                             const value = e.target.value;
                             // Only keep numeric values
                             const numericValue = value.replace(/\D/g, "");
@@ -998,7 +1002,7 @@ export const PermanentAddressForm = memo(
                   <FormField
                     control={form.control}
                     name="state"
-                    render={({ field:_field }) => (
+                    render={({ field: _field }) => (
                       <FormItem>
                         <FormLabel>State</FormLabel>
                         <Popover>
@@ -1165,7 +1169,7 @@ export const TeachingLocationPreference = ({
         toast(res.error, {
           action: {
             label: "Close",
-            onClick: () => {},
+            onClick: () => { },
           },
         });
         return;
@@ -1173,7 +1177,7 @@ export const TeachingLocationPreference = ({
       toast(res?.message, {
         action: {
           label: "Close",
-          onClick: () => {},
+          onClick: () => { },
         },
       });
 
@@ -1411,314 +1415,7 @@ export const TeachingLocationPreference = ({
   );
 };
 
-export const TeachingSubjects = ({ teacherData, canUpdate = true }: any) => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<{ [key: string]: string }>({});
-  const [teacherSubjects, setTeacherSubjects] = useState<
-    { [key: string]: string | number }[]
-  >([]);
 
-  const [subjectList, setSubjectList] = useState<[]>([]);
-  const [classList, setClassList] = useState<[]>([]);
-
-  const { setValidateProfile } = useContext(DataValidationContext);
-
-  const formSchema = z.object({
-    subject_id: z.number(),
-    class_id: z.number(),
-    fee: z.number().min(0, "Fee must be greater than 0"),
-  });
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      subject_id: undefined,
-      class_id: undefined,
-      fee: undefined,
-    },
-  });
-
-  const { reset:_reset } = form;
-
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      setLoading(true);
-      const res = (await addTeacherSubject(values)) as any;
-      if (res.error) {
-        setError({ backendError: res.error });
-        console.error("Error", res.error);
-        setLoading(false);
-        return;
-      } else {
-        setError({});
-        toast(res?.message, {
-          action: {
-            label: "Close",
-            onClick: () => {},
-          },
-        });
-        setValidateProfile(true);
-      }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getSubjectsList = async () => {
-    try {
-      setLoading(true);
-      const res = (await getSubjectList()) as any;
-      if (res.error) {
-        setError({ backendError: res.error });
-        console.error("Error", res.error);
-        return;
-      }
-      setSubjectList(res);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getClass = async () => {
-    try {
-      setLoading(true);
-      const res = (await getClassList()) as any;
-      if (res.error) {
-        setError({ backendError: res.error });
-        console.error("Error", res.error);
-        return;
-      }
-      setClassList(res);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // const fetchSubjects = async () => {
-  //     try {
-  //         setLoading(true);
-  //         const res = await getTeacherSubjects() as any;
-  //         if (res.error) {
-  //             setError({ backendError: res.error });
-  //             console.error("Error", res.error);
-  //             return;
-  //         }
-  //         setTeacherSubjects(res);
-  //         setLoading(false);
-  //     } catch (e) {
-  //         console.error(e);
-  //     }
-  // }
-
-  useEffect(() => {
-    setTeacherSubjects(teacherData?.subjects || []);
-  }, [teacherData]);
-
-  const handleDeleteSubject = async (teacher_subject_id: string | number) => {
-    try {
-      setLoading(true);
-      const res = (await deleteTeacherSubject(teacher_subject_id)) as any;
-      if (res.error) {
-        setError({ backendError: res.error });
-        console.error("Error", res.error);
-        return;
-      }
-      toast(res?.message, {
-        action: {
-          label: "Close",
-          onClick: () => {},
-        },
-      });
-      setValidateProfile(true);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    getSubjectsList();
-    getClass();
-  }, []);
-
-  return (
-    <Card className="p-5">
-      {loading ? (
-        <div className="flex justify-center items-center h-32">
-          {/* <Spinner /> */}
-          <Loader className="animate-spin" />
-        </div>
-      ) : (
-        teacherSubjects.length > 0 && (
-          <>
-            <CardHeader className="px-0">
-              <CardTitle>Teaching Subjects</CardTitle>
-              <CardDescription>
-                Add the subjects you are willing to teach.
-              </CardDescription>
-            </CardHeader>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
-              {teacherSubjects.map((subject, index) => (
-                <Card
-                  key={index}
-                  className={`group p-5  text-sm text-muted-foreground flex justify-between items-center gap-2 border-primary bg-secondary`}
-                >
-                  <div>
-                    <div>Class: {subject?.class_name}</div>
-                    <div> {subject?.subject_name} </div>
-                    <div>Fee: {subject?.fee} </div>
-                  </div>
-                  <Menubar className="bg-transparent border-none">
-                    <MenubarMenu>
-                      <MenubarTrigger>
-                        <EllipsisVertical />
-                      </MenubarTrigger>
-                      <MenubarContent>
-                        <MenubarItem
-                          className="flex gap-2"
-                          onClick={() =>
-                            handleDeleteSubject(subject.teacher_subject_id)
-                          }
-                        >
-                          <Trash size={16} /> Delete
-                        </MenubarItem>
-                      </MenubarContent>
-                    </MenubarMenu>
-                  </Menubar>
-                </Card>
-              ))}
-            </div>
-          </>
-        )
-      )}
-
-      <CardHeader className="mt-5 px-0">
-        <CardTitle>Add New Subject</CardTitle>
-        <CardDescription>
-          Add the subjects you are willing to teach.
-        </CardDescription>
-      </CardHeader>
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-wrap">
-          <div className="flex-1 space-y-5 w-full">
-            <div className="flex flex-wrap gap-5 [&>*]:flex-1 [&>*]:min-w-[200px]">
-              <FormField
-                control={form.control}
-                name="subject_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Subject</FormLabel>
-                    <Select
-                      onValueChange={(e) => {
-                        const value = e;
-                        // Only keep numeric values
-                        const numericValue = value.replace(/\D/g, "");
-                        field.onChange(Number(numericValue));
-                      }}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Subject" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {subjectList.map((subject: any, index: number) => (
-                          <SelectItem key={index} value={subject.subject_id}>
-                            {subject.subject_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="class_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Class</FormLabel>
-                    <Select
-                      onValueChange={(e) => {
-                        const value = e;
-                        // Only keep numeric values
-                        const numericValue = value.replace(/\D/g, "");
-                        field.onChange(Number(numericValue));
-                      }}
-                      // defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Class" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {classList.map((classItem: any, index: number) => (
-                          <SelectItem key={index} value={classItem.class_id}>
-                            {classItem.class_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="fee"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fee</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Enter the fee"
-                        {...field}
-                        onChange={(e:any) => {
-                          const value = e.target.value;
-                          // Only keep numeric values
-                          const numericValue = value.replace(/\D/g, "");
-                          field.onChange(Number(numericValue));
-                        }}
-                        readOnly={!canUpdate}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="!mt-5">
-              {error.backendError && (
-                <div className="text-sm font-medium text-destructive mb-2">
-                  {error.backendError}
-                </div>
-              )}
-              {canUpdate && (
-                <div className="flex justify-end">
-                  <Button type="submit" className="" disabled={loading}>
-                    Add
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </form>
-      </Form>
-    </Card>
-  );
-};
 
 export const Documents = ({
   teacherData,
@@ -1881,7 +1578,7 @@ export const Documents = ({
                   id="name"
                   placeholder="Eg: Post Graduation Marksheet"
                   className="col-span-3"
-                  onChange={(e:any) => setDocumentTitle(e.target.value)}
+                  onChange={(e: any) => setDocumentTitle(e.target.value)}
                   value={documentTitle}
                 />
               </div>
@@ -2034,7 +1731,7 @@ const Teacher = () => {
             {
               action: {
                 label: "Close",
-                onClick: () => {},
+                onClick: () => { },
               },
             }
           );
@@ -2044,7 +1741,7 @@ const Teacher = () => {
             {
               action: {
                 label: "Close",
-                onClick: () => {},
+                onClick: () => { },
               },
             }
           );
@@ -2078,7 +1775,7 @@ const Teacher = () => {
         toast("Processing... Do not close the window", {
           action: {
             label: "Close",
-            onClick: () => {},
+            onClick: () => { },
           },
         });
       } catch (e) {
@@ -2131,11 +1828,10 @@ const Teacher = () => {
               {docsToCheck.map((doc: any, index: number) => (
                 <Card
                   key={index}
-                  className={`p-5 text-primary font-semibold flex justify-between items-center gap-2 ${
-                    doc.completed
-                      ? "border-primary bg-secondary"
-                      : "border-red-500 bg-red-200"
-                  }`}
+                  className={`p-5 text-primary font-semibold flex justify-between items-center gap-2 ${doc.completed
+                    ? "border-primary bg-secondary"
+                    : "border-red-500 bg-red-200"
+                    }`}
                 >
                   <span>{doc.title}</span> {doc.completed ? <Check /> : <X />}
                 </Card>
@@ -2239,7 +1935,7 @@ const Teacher = () => {
         toast(res?.message, {
           action: {
             label: "Close",
-            onClick: () => {},
+            onClick: () => { },
           },
         });
       }
@@ -2257,6 +1953,7 @@ const Teacher = () => {
         <div className="flex flex-wrap justify-center md:items-start gap-5">
           <div className="space-y-5 min-w-[250px] md:sticky top-24 max-h-fit p-5">
             <div className="relative ">
+              
               <Image
                 src={
                   teacherData.photo
@@ -2289,9 +1986,9 @@ const Teacher = () => {
             </div>
             <div>
               <h1 className="text-2xl font-bold">
-                {`${teacherData?.first_name || ""} ${
-                  teacherData?.middle_name || ""
-                } ${teacherData?.last_name || ""}`}{" "}
+
+                {`${teacherData?.first_name || ""} ${teacherData?.middle_name || ""
+                  } ${teacherData?.last_name || ""}`}{" "}
                 {teacherData.is_verified ? (
                   <span className="relative">
                     <svg

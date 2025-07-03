@@ -13,8 +13,10 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { getAllTeachers, getTeacher, verifyTeacher } from "@/lib/API/Teacher";
-import { useEffect, useState } from "react";
-import { Documents, PermanentAddressForm, ResidentialAddressForm, TeacherUpdateForm, TeachingLocationPreference, TeachingSubjects } from "../../Teacher";
+import React, { useEffect, useState } from "react";
+const TeachingSubjects=React.lazy(()=>import("@/components/Teacher/TeacherSubject"));
+
+import { Documents, PermanentAddressForm, ResidentialAddressForm, TeacherUpdateForm, TeachingLocationPreference,  } from "../../Teacher";
 import { toast } from "sonner";
 import Image from "next/image";
 import { LoaderCircle } from "lucide-react";
